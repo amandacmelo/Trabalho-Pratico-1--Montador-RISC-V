@@ -154,30 +154,6 @@ if __name__ == "__main__":
     main()
 
 
-'''
-Para finalizar, de acordo com cada um dos tipos, foi definida uma formatação para as saídas. Sendo elas:
 
-Tipo R: Para o tipo R, a sequência fica: funct7, rs2, rs1, funct3, rd, opcode;
 
-Tipo I: Para o tipo I, a sequência fica: immediate, rs1, funct3, rd, opcode;
 
-Tipo S: Para o tipo S, a sequência fica: immediate, rs1, rs2, funct3, opcode;
-
-Tipo SB:
-
-Tipo I-1:
-
-Foram criadas funções para identificar cada tipo de instrução lida, sendo elas: TypeR, TypeI e TypeS, que funcionam basicamente da mesma forma. 
-
-Primeiro, foi definido o "opcode" para cada um dos tipos e, em seguida, foi feita a verificação de cada instrução recebida, sendo assim: ADD, SUB, AND, OR, SLL, SRL, definidas como tipo R; ADDI, ORI, ANDI e LW, definidas como tipo I; e SW definida como tipo S. 
-
-Logo após, foi criada a função do montador, que formata cada parte da instrução, converte para binário e organiza de acordo com cada formato, além de padronizar de acordo com a quantidade necessária de bits. 
-
-Para identificar cada tipo de instrução, seguimos alguns passos que serão descritos de acordo com cada tipo. Ao início, para todos os tipos,  o código busca a primeira palavra da instrução para identificar o seu tipo e seu "opcode". 
-
-No tipo R, todas as operações que foram usadas ao decorrer do trabalho possuem o mesmo "opcode", sendo a distinção de cada um, a combinação do funct3 e funct7. Já no tipo I, o "opcode" é diferente apenas para a instrução "LW", e, assim como no tipo S, a distinção ocorre somente a partir do funct3, já que não possui o funct7. 
-
-Desse modo, separamos a string recebida a partir de um comando "split", formatando a string, tornando os registradores "apenas" números para a conversão. Dessa forma, resta apenas converter os imediatos, que são números inteiros. 
-
-Para a transformação para binário, utilizamos a função "format", própria do Python e, também, criamos uma função para converter os números negativos, chamada de "complementoDois".
-'''
