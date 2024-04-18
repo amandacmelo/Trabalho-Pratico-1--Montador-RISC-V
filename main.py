@@ -1,7 +1,4 @@
 
-#Importar o módulo sys.
-#OBS.: O módulo sys fornece acesso a algumas variáveis usadas ou mantidas pelo interpretador Python e a funções que interagem fortemente com o interpretador.
-#Neste código em específico: sys.argv, que contém os argumentos de linha de comando passados para o script.
 import sys
 
 # Função para calcular o complemento de dois de um número decimal e usada para tipo de instruções que possuem imediatos
