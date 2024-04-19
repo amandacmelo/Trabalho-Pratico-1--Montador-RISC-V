@@ -1,4 +1,3 @@
-
 import sys
 
 # Função para calcular o complemento de dois de um número decimal e usada para tipo de instruções que possuem imediatos
@@ -9,7 +8,7 @@ def complemento_de_dois(numero):
         numero = numero * (-1)  # Transforma número negativo em positivo
         numero_binario = bin(numero)[2:].zfill(12)  # Converte para binário e preenche com zeros à esquerda para ter 12 bits
         binario_invertido = numero_binario.replace('0', '.').replace('1', '0').replace('.', '1')  # Inverte os bits
-        complemento = bin(int(binario_invertido, 2) + 1)[2:]  # Adiciona 1 ao número invertido para obter o complemento de dois
+        complemento = bin(int(binario_invertido, 2) + 1)[2:]  # Adiciona 1 ao número invertido para obter o complemento de dois, como não tem como somar binario em pythom, ele é convertido em int, faz a soma e depois convertido novamente em binário retirando o '0b'
     return complemento
 
 # Função para converter um número decimal para binário com um número específico de bits;
@@ -26,7 +25,7 @@ def opcode(instrucao):
 # Função que retorna o campo funct3 com base no tipo de instrução
 def funct3(instrucao):
     valor_funct3 = {'add': '000', 'addi': '000', 'and': '111', 'andi': '111',
-                     'beq': '000', 'bge': '101', 'bne': '001',
+                     'beq': '000', 'bge': '101', 'bne': '001', 'lb': '000', 'lh' : '001',
                      'lw': '010', 'or': '110', 'ori': '110',
                      'sb': '000', 'sh': '001', 'sll': '001', 'srl': '101',
                      'sub': '000', 'sw': '010', 'xor': '100', 'xori': '100',
@@ -35,7 +34,7 @@ def funct3(instrucao):
 
 # Função para montar a linha de instrução do assembly para linguagem de máquina EX: add, x2, x0, x1
 def montar_linha(elementos):
-
+    #ELementos comuns a maioria das instruções
     instrucao = elementos[0]  # Pega a instrução
     rd = elementos[1][1:]  # Remove o 'x' do registrador de destino
     r1 = elementos[2][1:]  # Remove o 'x' do registrador r1
@@ -67,27 +66,32 @@ def montar_linha(elementos):
         funct7 = '0100000'
         r2 = 0
         linha = (funct7 + decimal_binario(int(r1), 5) + decimal_binario(r2, 5) + funct3(instrucao)  + decimal_binario(int(rd), 5) + opcode(tipo_instrucao))
-
+        #Algumas instruções possuem formatações diferentes, essas diferenças foram tratadas dentro de cada módulo, como a quantidade de registradores e o formato dos mesmos, ignorando paratênses e o que for necessário
     elif instrucao in ['add', 'xor', 'sll', 'or', 'sub', 'srl', 'and']:  # Instruções do tipo 'r'
+    	#Tipo r: "instrução rd, r1, r2"= funct7 + r2 + r1 + funct3 + rd + opcode
+    	#Possui 3 registradores, a coleta do último foi feita no módulo da instrução a fim de tratar suas particularidades
         tipo_instrucao = 'r'
         funct7 = '0000000'
         r2 = elementos[3][1:]  # Remove o 'x' do registrador r2
-        if instrucao == 'sub':
-            funct7= '0100000'  # Funct7 específico para a subtração (sub)
+        if instrucao == 'sub': 
+            funct7= '0100000'  # Funct7 específico para a subtração (sub), que é o único difenrente dentre as instruções do tipo r
         linha = (funct7 + decimal_binario(int(r2), 5) + decimal_binario(int(r1), 5) + funct3(instrucao) +  decimal_binario(int(rd), 5) + opcode(tipo_instrucao))
 
     elif instrucao in [ 'bne', 'beq', 'bge']:  # Instruções do tipo 'sb'
         tipo_instrucao = 'sb'
-        imediato = complemento_de_dois(int(elementos[-1]))  # Calcula o complemento de dois do valor imediato
+        #Tipo sb: "instrução rd, r1, imediato" = imediato + r1 + rd + funct3 + imediato + opcode
+        imediato = complemento_de_dois(int(elementos[-1]))  # Calcula o complemento de dois do valor imediato, o imediato é o último elemento da instrução, logo é capturado pelo comando: elementos[-1]
         linha = (imediato[0] + imediato[1:7] + decimal_binario(int(r1), 5) + decimal_binario(int(rd), 5) + funct3(instrucao) + imediato[7:11] + imediato[-1] + opcode(tipo_instrucao))
 
     elif instrucao in ['sw', 'sb', 'sh']:  # Instruções do tipo 's'
+    	#Tipo s: "instrução rd, deslocamento(r1)" = imediato + r1 + rd + funct3 + imediato + opcode
         tipo_instrucao = 's'
-        imediato = complemento_de_dois(int(elementos[2].split('(')[0]))  # Extrai o deslocamento e calcula o complemento de dois
-        r1 = elementos[2].split('(')[1][1:-1]  # Extrai o registrador de origem base
+        imediato = complemento_de_dois(int(elementos[2].split('(')[0]))  # Extrai o deslocamento e calcula o complemento de dois, esse comando pega o terceiro elemento da lista e usa ( como ponto de divisão, e em seguida pega o elemento 0 dessa divisão que se torna o imediato
+        r1 = elementos[2].split('(')[1][1:-1]  # Extrai o registrador de origem base, continuação da outra linha, pega o segundo elemento da divisão resultante, que é o registrador
         linha = (imediato[:7]+ decimal_binario(int(rd), 5) + decimal_binario(int(r1), 5 ) +  funct3(instrucao) + imediato[-5:] + opcode(tipo_instrucao)) 
 
     elif instrucao in ['addi', 'ori', 'andi', 'lw', 'lb', 'lh', 'xori']:  # Instruções do tipo 'i' 
+        #TIpo i: "instrucao rd, r1, imediato" = imediato + r1 + funct3 + rd + opcode
         tipo_instrucao = 'i'
         if instrucao in ['addi', 'ori', 'andi', 'xori']:  # Instruções do tipo 'i'
             imediato = complemento_de_dois(int(elementos[-1]))  # Calcula o complemento de dois do valor imediato
@@ -95,8 +99,9 @@ def montar_linha(elementos):
 
         #Como a instrução tipo i possui dois tipos diferentes de opcode, criamos dois para diferenciar
         elif instrucao in ['lw', 'lb', 'lh']:  # Instruções do tipo 'i-1'
+             #TIpo i-1: "instrucao rd, deslocamento(r1)" = imediato + r1 + funct3 + rd + opcode
             tipo_instrucao = 'i-1'
-            imediato = complemento_de_dois(int(elementos[2].split('(')[0]))  # Extrai o deslocamento e calcula o complemento de dois ignorando os parênteses 
+            imediato = complemento_de_dois(int(elementos[2].split('(')[0]))  # Extrai o deslocamento e calcula o complemento de dois ignorando os parênteses, mesmo procedimento da instrução do tipo s
             r1 = elementos[2].split('(')[1][1:-1]  # Extrai o registrador ignorando os parênteses 
             linha = ( imediato + decimal_binario(int(r1), 5) +  funct3(instrucao) + decimal_binario(int(rd), 5) + opcode(tipo_instrucao))
            
@@ -149,3 +154,5 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+
